@@ -17,6 +17,17 @@ let styles =
           ~borderWidth=5.,
           ~borderColor="red",
           (),
+        ),
+      "hidden":
+        viewStyle(
+          ~height=100.->pct,
+          ~width=100.->pct,
+          ~backgroundColor="grey",
+          (),
+        ),
+      "empty":
+        viewStyle(
+          (),
         )
     })
   );
@@ -34,11 +45,11 @@ let component = (~cell:Minesweeper.cell, ~x:int, ~y:int, ~updateCB) => {
   <Pressable style={Style.(array([|styles##button, selectedStyle|]))} onPress={onPress}>
     { 
       switch cState {
-      | Hidden(_) => <Text>"H"->React.string</Text>
-      | Flagged(_) => <Text>"F"->React.string</Text>
+      | Hidden(_) => <View style=styles##hidden/>
+      | Flagged(_) => <RNIcons.MaterialCommunityIcons name=`_flagVariant size=15. />
       | Revealed(Number(a)) => <Text>{Js.Int.toString(a)}->React.string</Text>
-      | Revealed(Bomb) => <Text>"B"->React.string</Text>
-      | Revealed(CEmpty) => <Text>"E"->React.string</Text>
+      | Revealed(Bomb) => <RNIcons.MaterialCommunityIcons name=`_bomb size=15. />
+      | Revealed(CEmpty) => <View style=styles##empty/>
       };
     } 
   </Pressable>

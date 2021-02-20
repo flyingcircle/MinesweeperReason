@@ -6,6 +6,7 @@ let styles =
       "container":
         viewStyle(
           ~flex=1.,
+          ~flexDirection=`row,
           ~padding=15.->dp,
           ~height=100.->pct,
           ~width=100.->pct,
@@ -13,10 +14,11 @@ let styles =
           ~alignItems=`center,
           (),
         ),
-      "leftRightContainer":
+      "buttonContainer":
         viewStyle(
-          ~flex=1.,
-          ~flexDirection=`row,
+          ~flex=3.,
+          ~justifyContent=`center,
+          ~alignItems=`center,
           (),
         ),
     })
@@ -94,30 +96,33 @@ module Circle = {
       StyleSheet.create({
         "circle":
           viewStyle(
-            ~width=50.->dp,
-            ~height=50.->dp,
+            ~width=100.->dp,
+            ~height=100.->dp,
             ~borderRadius=50.,
             ~backgroundColor="red",
             ~margin=25.->dp,
+            ~justifyContent=`center,
+            ~alignItems=`center,
             (),
           ),
       })
     );
 
   [@react.component]
-  let component = (~onPress) => {
-    <Pressable style=styles##circle onPress={onPress} />
+  let component = (~onPress, ~icon) => {
+    <Pressable style=styles##circle onPress={onPress} >
+      <RNIcons.MaterialCommunityIcons name={icon} size=80. />
+    </Pressable>
   }
 };
 
 [@react.component]
 let component = (~updateCB) =>
   <View style=styles##container>
-    <Arrow.component direction={Arrow.Up} />
-    <View style=styles##leftRightContainer >
-      <Arrow.component direction={Arrow.Left} />
-      <Circle.component onPress={(_) => updateCB((0,0), Minesweeper.Reveal)}/>
-      <Arrow.component direction={Arrow.Right} />
+    <View style=styles##buttonContainer >
+      <Circle.component onPress={(_) => updateCB((0,0), Minesweeper.Flag)} icon=`_flagVariant/>
     </View>
-    <Arrow.component direction={Arrow.Down} />
+    <View style=styles##buttonContainer >
+      <Circle.component onPress={(_) => updateCB((0,0), Minesweeper.Reveal)} icon=`_pickaxe/>
+    </View>
   </View>
