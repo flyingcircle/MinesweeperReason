@@ -1,32 +1,5 @@
 open ReactNative;
 
-type content = 
-  | Number(int)
-  | Bomb
-  | CEmpty;
-
-type cellState =
-  | Hidden(content)
-  | Revealed(content);
-
-type cell =
-  | Selected(cellState)
-  | NotSelected(cellState);
-
-let revealCell = (c: cell): cell => {
-  switch c {
-    | Selected(Hidden(c)) => NotSelected(Revealed(c))
-    | x => x
-  };
-};
-
-let getCellState = (c: cell): cellState => {
-  switch c {
-    | Selected(x) => x
-    | NotSelected(x) => x
-  };
-}
-
 let styles =
   Style.(
     StyleSheet.create({
@@ -49,20 +22,24 @@ let styles =
   );
 
 [@react.component]
-let component = (~cell:cell) => {
-  let (isPressed, setIsPressed) = React.useState(() => false);
-  let cState = getCellState(cell);
+let component = (~cell:Minesweeper.cell, ~x:int, ~y:int, ~updateCB) => {
+  let cState = Minesweeper.getCellState(cell);
   let selectedStyle = switch cell {
     | Selected(_) => styles##selected
     | NotSelected(_) => Style.(style())
   };
-  <Pressable style={Style.(array([|styles##button, selectedStyle|]))} onPress={_ => setIsPressed(_ => true)}>
+  let onPress = (_) => {
+    updateCB((x,y), Minesweeper.Select)
+  };
+  <Pressable style={Style.(array([|styles##button, selectedStyle|]))} onPress={onPress}>
     { 
       switch cState {
       | Hidden(_) => <Text>"H"->React.string</Text>
-      | Revealed(Number(_)) => <Text>"N"->React.string</Text>
+      | Flagged(_) => <Text>"F"->React.string</Text>
+      | Revealed(Number(a)) => <Text>{Js.Int.toString(a)}->React.string</Text>
       | Revealed(Bomb) => <Text>"B"->React.string</Text>
       | Revealed(CEmpty) => <Text>"E"->React.string</Text>
-    };}
+      };
+    } 
   </Pressable>
 };

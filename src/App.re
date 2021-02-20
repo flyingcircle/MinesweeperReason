@@ -35,21 +35,7 @@ let styles =
           ~flex=1.,
           (),
         ),
-      "gameContainer":
-        viewStyle(
-          ~flex=4.,
-          ~height=100.->pct,
-          ~width=100.->pct,
-          (),
-        ),
-      "controllerContainer":
-        viewStyle(
-          ~flex=2.,
-          ~height=100.->pct,
-          ~width=100.->pct,
-          ~backgroundColor=colors##dark,
-          (),
-        ),
+      
     })
   );
 
@@ -58,11 +44,6 @@ let app = () =>
   <>
     <StatusBar barStyle=`darkContent />
     <SafeAreaView style=styles##appContainer>
-      <View style=styles##gameContainer >
-        <Board.component board={Minesweeper.emptyBoard} />
-      </View>
-      <View style=styles##controllerContainer >
-        <ControllerView.component />
-      </View>
+        <Board.component />
     </SafeAreaView>
   </>;

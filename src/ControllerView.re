@@ -105,19 +105,18 @@ module Circle = {
     );
 
   [@react.component]
-  let component = () => {
-    <View style=styles##circle >
-    </View>
+  let component = (~onPress) => {
+    <Pressable style=styles##circle onPress={onPress} />
   }
 };
 
 [@react.component]
-let component = () =>
+let component = (~updateCB) =>
   <View style=styles##container>
     <Arrow.component direction={Arrow.Up} />
     <View style=styles##leftRightContainer >
       <Arrow.component direction={Arrow.Left} />
-      <Circle.component />
+      <Circle.component onPress={(_) => updateCB((0,0), Minesweeper.Reveal)}/>
       <Arrow.component direction={Arrow.Right} />
     </View>
     <Arrow.component direction={Arrow.Down} />
