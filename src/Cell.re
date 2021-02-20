@@ -23,6 +23,8 @@ let styles =
           ~height=100.->pct,
           ~width=100.->pct,
           ~backgroundColor="grey",
+          ~justifyContent=`center,
+          ~alignItems=`center,
           (),
         ),
       "empty":
@@ -46,7 +48,7 @@ let component = (~cell:Minesweeper.cell, ~x:int, ~y:int, ~updateCB) => {
     { 
       switch cState {
       | Hidden(_) => <View style=styles##hidden/>
-      | Flagged(_) => <RNIcons.MaterialCommunityIcons name=`_flagVariant size=15. />
+      | Flagged(_) => <View style=styles##hidden><RNIcons.MaterialCommunityIcons name=`_flagVariant size=15. color="#a50000" /></View>
       | Revealed(Number(a)) => <Text>{Js.Int.toString(a)}->React.string</Text>
       | Revealed(Bomb) => <RNIcons.MaterialCommunityIcons name=`_bomb size=15. />
       | Revealed(CEmpty) => <View style=styles##empty/>

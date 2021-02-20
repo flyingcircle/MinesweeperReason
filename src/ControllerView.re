@@ -105,24 +105,35 @@ module Circle = {
             ~alignItems=`center,
             (),
           ),
+        "smaller":
+          viewStyle(
+            ~width=50.->dp,
+            ~height=50.->dp,
+            ~borderRadius=25.,
+            (),
+          ),
       })
     );
 
   [@react.component]
-  let component = (~onPress, ~icon) => {
-    <Pressable style=styles##circle onPress={onPress} >
-      <RNIcons.MaterialCommunityIcons name={icon} size=80. />
+  let component = (~onPress, ~icon, ~size=80., ~smaller=false) => {
+    let smallStyle = smaller ? styles##smaller : Style.(style());
+    <Pressable style={Style.(array([|styles##circle, smallStyle|]))} onPress={onPress} >
+      <RNIcons.MaterialCommunityIcons name={icon} size={size} />
     </Pressable>
   }
 };
 
 [@react.component]
 let component = (~updateCB) =>
-  <View style=styles##container>
-    <View style=styles##buttonContainer >
-      <Circle.component onPress={(_) => updateCB((0,0), Minesweeper.Flag)} icon=`_flagVariant/>
+  <>
+    <View style=styles##container>
+      <View style=styles##buttonContainer >
+        <Circle.component onPress={(_) => updateCB((0,0), Minesweeper.Flag)} icon=`_flagVariant/>
+      </View>
+      <View style=styles##buttonContainer >
+        <Circle.component onPress={(_) => updateCB((0,0), Minesweeper.Reveal)} icon=`_pickaxe/>
+      </View>
     </View>
-    <View style=styles##buttonContainer >
-      <Circle.component onPress={(_) => updateCB((0,0), Minesweeper.Reveal)} icon=`_pickaxe/>
-    </View>
-  </View>
+    <Circle.component onPress={_ => updateCB((0,0), Minesweeper.NewGame)} icon=`_newBox size=40. smaller=true />
+  </>

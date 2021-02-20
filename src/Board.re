@@ -28,6 +28,11 @@ let styles =
           ~alignItems=`center,
           (),
         ),
+      "messageContainer":
+        viewStyle(
+          ~height=50.->dp,
+          (),
+        ),
       "rowContainer":
         viewStyle(
           ~flexDirection=`row,
@@ -38,6 +43,20 @@ let styles =
           ~flexDirection=`column,
           ~flex=1.,
           ()
+        ),
+      "winMessage":
+        style(
+          ~fontSize=30.,
+          ~fontWeight=`_600,
+          ~color="green",
+          (),
+        ),
+      "loseMessage":
+        style(
+          ~fontSize=30.,
+          ~fontWeight=`_600,
+          ~color="red",
+          (),
         ),
     })
   );
@@ -60,23 +79,45 @@ type row = array(Minesweeper.cell);
 
 [@react.component]
 let component = () => {
-  let (board, setBoard) = React.useState(() => Minesweeper.newGame);
+  let (board, setBoard) = React.useState(Minesweeper.newGame);
   let (selected, setSelected) = React.useState(() => (-1,-1));
-  let getSelected = () => selected;
+  let (won, setWon) = React.useState(() => false);
+  let (lost, setLost) = React.useState(() => false);
   let updateBoard = (coord: (int,int), a: Minesweeper.action) => {
     switch a {
-      | Reveal => setBoard(board => Minesweeper.revealSpace(getSelected(), board))
+      | Reveal => {
+        setBoard(board => {
+          let b' = Minesweeper.revealSpace(selected, board)
+          setWon(_ => Minesweeper.won(b'));
+          setLost(_ => Minesweeper.lost(b'));
+          b'
+        });
+      }
       | Select => {
-          setSelected(_ => {
-            coord});
+          setSelected(_ => coord);
           setBoard(board => Minesweeper.selectCell(coord, board));
       }
-      | Flag => setBoard(board => board)
+      | Flag => setBoard(board => Minesweeper.setFlag(selected, board))
+      | NewGame => {
+        setWon(_ => false);
+        setLost(_ => false);
+        setBoard(_ => Minesweeper.newGame());
+      }
     };
   };
   <>
-    <View style=styles##gameContainer >
+    <View style=styles##gameContainer>
       <View style=styles##container>
+        <View style=styles##messageContainer>
+          {won ?
+            (<Text style=styles##winMessage >"You Won!"->React.string</Text>) :
+            (<View/>)
+          }
+          {lost ?
+            (<Text style=styles##loseMessage >"You Lost! :("->React.string</Text>) :
+            (<View/>)
+          }
+        </View>
         {board
         -> Belt.Array.mapWithIndex((i, row) => {
           <Row.component key={Js.Int.toString(i)} boardRow={row} rowIndex={i} updateCB={updateBoard} />

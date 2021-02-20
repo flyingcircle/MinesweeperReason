@@ -1,4 +1,5 @@
 type action = 
+  | NewGame
   | Reveal
   | Select
   | Flag;
@@ -43,8 +44,6 @@ let getCellContent = (c: cell): content => {
     | Flagged(x) => x
   }
 }
-
-Random.init(int_of_float(Js.Date.now()));
 
 let createBoard = (f): boardType => {
   Belt.Array.map( Belt.Array.range(0,9), y => Belt.Array.map(
@@ -98,7 +97,8 @@ let numberSurroundingBombs = (coord: (int, int), bombList): int => {
   Belt.Set.intersect(bombSet, surroundingSet)->Belt.Set.size;
 }
 
-let newGame: boardType = {
+let newGame = (): boardType => {
+  Random.init(int_of_float(Js.Date.now()));
   let bombList = generateBombPlacement(10, [||]);
   createBoard((x, y) => switch (x, y) {
     | (x, y) when Array.exists(eq((x,y)), bombList) => NotSelected(Hidden(Bomb))
@@ -128,14 +128,40 @@ and revealEmptiesAt = ((x, y): (int, int), b: boardType): boardType => {
   };
 }
 
-let selectCell = ((x, y): (int, int), b: boardType) => {
-  updateCell((x, y), b, 
+let selectCell = (coord: (int, int), b: boardType) => {
+  updateCell(coord, b, 
     c => Selected(getCellState(c)), 
     c => NotSelected(getCellState(c)));
 };
 
-let inProgress = (b: boardType) => true;
+let setFlag = (coord: (int, int), b:boardType) => {
+  updateCell(coord, b,
+    c => switch c {
+      | Selected(Flagged(_)) => Selected(Hidden(getCellContent(c)))
+      | _ => Selected(Flagged(getCellContent(c)))
+    },
+    c => c);
+}
 
-let won = (b: boardType) => true;
+let won = (b: boardType): bool => {
+  let fold_func = (v, c) => {
+    let cs = getCellState(c);
+    v && switch cs {
+      | Hidden(Bomb) => true
+      | Flagged(Bomb) => true
+      | Revealed(Number(_)) => true
+      | Revealed(CEmpty) => true
+      | _ => false
+  }};
+  Array.fold_left(fold_func, true, Array.fold_left(Array.append, [||], b));
+}
 
-let lost = (b: boardType) => false;
+let lost = (b: boardType): bool => {
+  let fold_func = (v, c) => {
+    let cs = getCellState(c);
+    v || switch cs {
+      | Revealed(Bomb) => true
+      | _ => false
+  }};
+  Array.fold_left(fold_func, false, Array.fold_left(Array.append, [||], b));
+};
