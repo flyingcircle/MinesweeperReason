@@ -83,6 +83,8 @@ let component = () => {
   let (selected, setSelected) = React.useState(() => (-1,-1));
   let (won, setWon) = React.useState(() => false);
   let (lost, setLost) = React.useState(() => false);
+  // This function is passed down to both the controller buttons and each individual
+  // cell which provide their relevant actions when pressed.
   let updateBoard = (coord: (int,int), a: Minesweeper.action) => {
     switch a {
       | Reveal => {

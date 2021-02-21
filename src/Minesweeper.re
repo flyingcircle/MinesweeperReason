@@ -21,6 +21,11 @@ type cell =
 type boardType = array(array(cell));
 type bombList = array((int,int));
 
+/* 
+Even Not Selected cells must be revealed when an empty
+space is revealed, all surrounding empty and number spaces
+are also revealed as well.
+*/
 let revealCell = (c: cell): cell => {
   switch c {
     | Selected(Hidden(c)) => NotSelected(Revealed(c))
@@ -45,11 +50,20 @@ let getCellContent = (c: cell): content => {
   }
 }
 
+/*
+The pivotal higher order function, takes a function that describes
+how to build a new board.
+*/
 let createBoard = (f): boardType => {
   Belt.Array.map( Belt.Array.range(0,9), y => Belt.Array.map(
   Belt.Array.range(0,9), x => f(x, y)));
 }
 
+/*
+Takes a coordinate on the board and updates the board using:
+u: a function used to update at the specified coord (x,y).
+s: a function used to update every other poistion.
+*/
 let updateCell = ((x, y): (int, int), b: boardType, u: cell => cell, s: cell => cell) => {
   createBoard((x',y') => {
     let cell: cell = Array.get(Array.get(b, y'), x')
@@ -60,10 +74,13 @@ let updateCell = ((x, y): (int, int), b: boardType, u: cell => cell, s: cell => 
   });
 }
 
+// used in dev.
 let emptyBoard = createBoard((_, _) => NotSelected(Hidden(CEmpty)));
 
+// required in order to curry below
 let eq = (x, y) => x == y;
 
+// randomly create x number of coordinates.
 let rec generateBombPlacement = (remaining: int, bombCoordinates: bombList) => {
   if (remaining == 0)
     { bombCoordinates; }
@@ -76,6 +93,8 @@ let rec generateBombPlacement = (remaining: int, bombCoordinates: bombList) => {
     }
 }
 
+// in order create the Number() cells, we need to count bombs around a 
+// particular cell
 let getSurroundingCoords = ((x,y): (int, int)): array((int,int)) => {
   let offset = [|(-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,1)|];
   Array.map(((x',y')) => (x + x', y + y'), offset)
@@ -91,12 +110,16 @@ module PairComparator =
       };
   });
 
+// The Number(x) of a cell = count (bomb-coords ∩ surrounding-cells).
 let numberSurroundingBombs = (coord: (int, int), bombList): int => {
   let bombSet = Belt.Set.fromArray(bombList, ~id=(module PairComparator));
   let surroundingSet = Belt.Set.fromArray(getSurroundingCoords(coord), ~id=(module PairComparator));
   Belt.Set.intersect(bombSet, surroundingSet)->Belt.Set.size;
 }
 
+/*
+Gen new bomb list and derive the rest of the board from there.
+*/
 let newGame = (): boardType => {
   Random.init(int_of_float(Js.Date.now()));
   let bombList = generateBombPlacement(10, [||]);
@@ -107,8 +130,15 @@ let newGame = (): boardType => {
   });
 }
 
+/*
+Next 2 functions are mutually recursive. (ReasonML was giving an
+error when I attempted to put a switch inside another switch).
+
+When a spot is revealed, we need to check if we revealed an empty
+square. If so, we recurse down the surrounding cells to reveal all
+adjacent empty and number squares.  
+*/
 let rec revealSpace = ((x,y): (int, int), b: boardType): boardType => {
-  Js.log({j|revealing space: $x, $y|j});
   switch (x, y) {
     | (x, _) when x < 0 || x > 9 => b
     | (_, y) when y < 0 || y > 9 => b
@@ -123,6 +153,7 @@ and revealEmptiesAt = ((x, y): (int, int), b: boardType): boardType => {
       let b' = updateCell((x,y), b, revealCell, x => x);
       Array.fold_left((a,b) => revealSpace(b,a), b', [|(x+1, y), (x-1, y), (x, y+1), (x, y-1)|]);
     }
+    // Since no empty square touches a bomb, we are safe to use an '_' here.
     | Hidden(_) => updateCell((x,y), b, revealCell, x => x);
     | _ => b
   };
