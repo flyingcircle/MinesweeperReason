@@ -17,3 +17,14 @@ Cell.re - The individual cells in the board.
 ControllerView.re - the bottom half that has 3 buttons: the flag button, the "reveal" (pickaxe) button, and the "new game button".
 
 Minesweeper.re - The actual game logic and types. This where the meat of the ReasonML code actually lives.
+
+To run the code, you'll need Xcode installed then:
+
+```bash
+yarn install
+cd ios
+pod install
+yarn bsb -make-world
+```
+
+Then open the xcworkspace file in your xcode in order to fire it up!
